@@ -73,7 +73,7 @@ namespace RPGGameWPF
 			
 			var hero = new Hero(cls, new Position(1, 1));
 			state = new GameState(map, hero);
-
+			 
 			SpawnEnemies(state, seed);
 			SpawnChestAndDrops(state, seed);
 			BuildMapVisual(); 
