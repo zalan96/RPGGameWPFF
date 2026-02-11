@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RPGGameWPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow" Height="450" Width="800"
+		KeyDown="Window_KeyDown">
+	
+	<Grid>
 		<Grid x:Name="MenuPanel" Visibility="Visible">
 			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
 						Width="360">

@@ -73,6 +73,9 @@ namespace RPGGameWPF
 			
 			var hero = new Hero(cls, new Position(1, 1));
 			state = new GameState(map, hero);
+
+			SpawnEnemies(state, seed);
+			SpawnChestAndDrops(state, seed);
 			BuildMapVisual(); 
 			ShowGame();
 			StartTimer();
@@ -169,6 +172,139 @@ namespace RPGGameWPF
 
 				}
 			}
+
+			//láda 
+			for (int i = 0; i < state.Chests.Count; i++)
+			{
+				var chest = state.Chests[i];
+
+				if(!chest.Opened)
+					cellText[chest.Pos.X, chest.Pos.Y].Text = "📦";
+			}
+
+			for (int i = 0; i < state.GroundDrops.Count; i++)
+			{
+				var d = state.GroundDrops[i];
+
+				string icon = d.Item.Type switch
+				{
+					ItemType.Potion => "🧪",
+					ItemType.Weapon => "⚔️",
+					ItemType.Armor => "🛡️",
+					_ => "❓"
+				};
+			}
+
+			cellText[state.Player.Pos.X, state.Player.Pos.Y].Text = "🙎‍";
+
+			for (int i = 0; i < state.Enemies.Count; i++)
+			{
+				var en = state.Enemies[i];
+
+				if (!en.IsAlive) continue;
+
+				cellText[en.Pos.X, en.Pos.Y].Text = en.Type == EnemyType.Goblin ? "👹" : "💀";
+			}
+
+			cellText[state.Player.Pos.X, state.Player.Pos.Y].Text = "🙎‍";
+		}
+		private void SpawnChestAndDrops(GameState st, int seed)
+		{
+			//láda és földön lévő tárgyak megjelenítése
+			var r = new Random(seed + 999);
+
+			int chestCount = 4;
+			for (int i = 0; i < chestCount; i++)
+			{
+				Position p;
+				do
+				{
+					p = new Position(r.Next(1, st.Map.Width - 1), r.Next(1, st.Map.Height - 1));
+				}
+				while (!st.Map.IsWalkable(p) || (p.X == 1 && p.Y == 1) || (p.X == st.Map.ExitPos.X & p.Y == st.Map.ExitPos.Y || st.GetEnemyAt(p) != null));
+				st.Chests.Add(new Chest(p));
+			}
+			int potions = 3; 
+			for (int i = 0; i < potions; i++)
+			{
+				Position p;
+				do
+				{
+					p = new Position(r.Next(1, st.Map.Width - 1), r.Next(1, st.Map.Height - 1));
+				}
+				while (!st.Map.IsWalkable(p) || (p.X == 1 && p.Y == 1));
+				st.GroundDrops.Add(new GroundDrop(new PotionItem("Potion", ItemRarity.Common, 12), p));
+			}
+			
+		}
+
+		private void SpawnEnemies(GameState st, int seed)
+		{
+			var r = new Random(seed + 123);
+			int count = 3;
+
+            for (int i = 0; i < count; i++)
+            {
+				EnemyType type = (r.NextDouble() < 0.65) ? EnemyType.Goblin : EnemyType.Skeleton;
+
+				Position p;
+				do
+				{
+					p = new Position(r.Next(1, st.Map.Width - 1), r.Next(1, st.Map.Height - 1));
+				} while (!st.Map.IsWalkable(p) || (p.X == 1 && p.Y == 1) || (p.X == st.Map.ExitPos.X & p.Y == st.Map.ExitPos.Y));
+				st.Enemies.Add(new Enemy(type, p));
+			}
+        }
+
+		private void Window_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (!inGame) return;
+			if (state == null) return;
+			if (state.IsGameOver) return;
+			
+			if (e.Key == Key.I)
+			{
+				return;
+			}
+
+			if(e.Key == Key.S)
+			{
+				return;
+			}
+
+			Direction? dir = e.Key switch
+			{
+				Key.Up => Direction.Up,
+				Key.Down => Direction.Down,
+				Key.Left => Direction.Left,
+				Key.Right => Direction.Right,
+				_ => null
+			};
+
+			if (dir == null) return;
+
+			PlayerMove(dir.Value);
+			RenderAll();
+		}
+
+		private void PlayerMove(Direction dir)
+		{
+			if (state == null) return;
+			var (dx, dy) = dir switch
+			{
+				Direction.Up => (0, -1),
+				Direction.Down => (0, 1),
+				Direction.Left => (-1, 0),
+				_ => (1, 0)
+				
+			};
+			var next = state.Player.Pos.Add(dx, dy);
+
+			if (!state.Map.IsWalkable(next))
+			{
+				return;
+			}
+			state.Player.Pos = next;
 		}
 		private void BackToMenu_Click(object sender, RoutedEventArgs e)
 		{

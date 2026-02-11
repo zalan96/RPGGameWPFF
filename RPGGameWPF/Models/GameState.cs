@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 
 namespace RPGGameWPF.Models
 {
@@ -56,11 +57,30 @@ namespace RPGGameWPF.Models
 			IsGameOver = false;
 			IsWin = false;
 		}
-
-		public GameState(Map map, Hero hero)
+		public Enemy? GetEnemyAt(Position pos)
 		{
-			Map = map;
-			this.hero = hero;
+			for (int i = 0; i < Enemies.Count; i++)
+			{
+				if (Enemies[i].IsAlive && Enemies[i].Pos.X == pos.X && Enemies[i].Pos.Y == pos.Y) return Enemies[i];
+			}
+		}
+
+		public GroundDrop? GetDropAt(Position p)
+		{
+			for (int i = 0; i < GroundDrops.Count; i++)
+			{
+				if (GroundDrops[i].Pos.X == p.X && GroundDrops[i].Pos.Y == p.Y) return GroundDrops[i];
+			}
+			return null;
+		}
+
+		public Chest? GetChestAt(Position p)
+		{
+			for (int i = 0; i < Chests.Count; i++)
+			{
+				if (Chests[i].Pos.X == p.X && Chests[i].Pos.Y == p.Y) return Chests[i];
+			}
+			return null;
 		}
 	}
 }
